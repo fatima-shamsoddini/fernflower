@@ -10,6 +10,8 @@ import java.util.Map;
 public interface IFernflowerPreferences {
   String REMOVE_BRIDGE = "rbr";
   String REMOVE_SYNTHETIC = "rsy";
+  //Added By Fatima
+  String DISABLE_RECORD_CONSTRUCTOR ="drc";
   String DECOMPILE_INNER = "din";
   String DECOMPILE_CLASS_1_4 = "dc4";
   String DECOMPILE_ASSERTIONS = "das";

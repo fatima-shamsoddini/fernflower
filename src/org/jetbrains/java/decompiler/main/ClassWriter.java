@@ -283,19 +283,13 @@ public class ClassWriter {
   @SuppressWarnings("SpellCheckingInspection")
   private static boolean isSyntheticRecordMethod(StructClass cl, StructMethod mt, TextBuffer code) {
     if (cl.getRecordComponents() != null) {
-      //System.out.println("Method Name: " + mt.getName());
-      //System.out.println("Method Descriptor: " + mt.getDescriptor());
       String name = mt.getName(), descriptor = mt.getDescriptor();
-      if( name.equals("<init>"))
-      {
-        //System.out.println("constructor method found!!!");
-        return true;
+      if(DecompilerContext.getOption(IFernflowerPreferences.DISABLE_RECORD_CONSTRUCTOR)) {
+        if (name.equals("<init>"))
+          return true;
+        if(name.equals(mt.getName()))
+          return true;
       }
-      if(name.equals(mt.getName()))
-     {
-       // System.out.println("the getter method found!!!");
-        return true;
-     }
       if (name.equals("equals") && descriptor.equals("(Ljava/lang/Object;)Z") ||
         name.equals("hashCode") && descriptor.equals("()I") ||
         name.equals("toString") && descriptor.equals("()Ljava/lang/String;")) {
