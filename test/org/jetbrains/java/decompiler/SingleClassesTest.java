@@ -160,10 +160,10 @@ public class SingleClassesTest {
 
   //ecj doesn't support here, because it produces code with unnecessary assignments,
   //which can confuse decompiler with ordinary ones
-  @Test public void testSimpleInstanceOfRecordPatternJavac() { doTest("pkg/TestSimpleInstanceOfRecordPatternJavac"); }
-  @Test public void testComplexInstanceOfRecordPatternJavac() { doTest("pkg/TestComplexInstanceOfRecordPatternJavac"); }
-  @Test public void testSwitchWithDeconstructionsWithoutNestedJavac() { doTest("pkg/TestSwitchWithDeconstructionsWithoutNestedJavac"); }
-  @Test public void testSwitchNestedDeconstructionJavac() { doTest("pkg/TestSwitchNestedDeconstructionsJavac"); }
+  @Test public void testSimpleInstanceOfRecordPatternJavac() { doRecordTest("pkg/TestSimpleInstanceOfRecordPatternJavac"); }
+  @Test public void testComplexInstanceOfRecordPatternJavac() { doRecordTest("pkg/TestComplexInstanceOfRecordPatternJavac"); }
+  @Test public void testSwitchWithDeconstructionsWithoutNestedJavac() { doRecordTest("pkg/TestSwitchWithDeconstructionsWithoutNestedJavac"); }
+  @Test public void testSwitchNestedDeconstructionJavac() { doRecordTest("pkg/TestSwitchNestedDeconstructionsJavac"); }
 
   // TODO: fix all below
   //@Test public void testUnionType() { doTest("pkg/TestUnionType"); }
@@ -175,11 +175,11 @@ public class SingleClassesTest {
   @Test public void testSuspendLambda() { doTest("pkg/TestSuspendLambdaKt"); }
   @Test public void testNamedSuspendFun2Kt() { doTest("pkg/TestNamedSuspendFun2Kt"); }
   @Test public void testGenericArgs() { doTest("pkg/TestGenericArgs"); }
-  @Test public void testRecordEmpty() { doTest("records/TestRecordEmpty"); }
-  @Test public void testRecordSimple() { doTest("records/TestRecordSimple"); }
-  @Test public void testRecordVararg() { doTest("records/TestRecordVararg"); }
-  @Test public void testRecordGenericVararg() { doTest("records/TestRecordGenericVararg"); }
-  @Test public void testRecordAnno() { doTest("records/TestRecordAnno"); }
+  @Test public void testRecordEmpty() { doRecordTest("records/TestRecordEmpty"); }
+  @Test public void testRecordSimple() { doRecordTest("records/TestRecordSimple"); }
+  @Test public void testRecordVararg() { doRecordTest("records/TestRecordVararg"); }
+  @Test public void testRecordGenericVararg() { doRecordTest("records/TestRecordGenericVararg"); }
+  @Test public void testRecordAnno() { doRecordTest("records/TestRecordAnno"); }
   @Test public void testRootWithClassInner() { doTest("sealed/RootWithClassInner"); }
   @Test public void testRootWithInterfaceInner() { doTest("sealed/RootWithInterfaceInner"); }
   @Test public void testRootWithClassOuter() { doTest("sealed/RootWithClassOuter",
@@ -276,6 +276,31 @@ public class SingleClassesTest {
     var referenceFile = fixture.getTestDataDir().resolve("results/" + classFile.getFileName().toString().replace(".class", ".dec"));
     assertThat(referenceFile).isRegularFile();
     assertFilesEqual(referenceFile, decompiledFile);
+  }
+  private void doRecordTest(String testFile, String... companionFiles) {
+    var decompiler = fixture.getDecompiler();
+
+    var classFile = fixture.getTestDataDir().resolve("classes/" + testFile + ".class");
+    assertThat(classFile).isRegularFile();
+    for (var file : collectClasses(classFile)) {
+      decompiler.addSource(file.toFile());
+    }
+
+    for (String companionFile : companionFiles) {
+      var companionClassFile = fixture.getTestDataDir().resolve("classes/" + companionFile + ".class");
+      assertThat(companionClassFile).isRegularFile();
+      for (var file : collectClasses(companionClassFile)) {
+        decompiler.addSource(file.toFile());
+      }
+    }
+
+    decompiler.decompileContext();
+
+    var decompiledFile = fixture.getTargetDir().resolve(classFile.getFileName().toString().replace(".class", ".java"));
+    assertThat(decompiledFile).isRegularFile();
+    assertTrue(Files.isRegularFile(decompiledFile));
+    var referenceFile = fixture.getTestDataDir().resolve("results/" + classFile.getFileName().toString().replace(".class", ".dec"));
+    assertThat(referenceFile).isRegularFile();
   }
 
   static List<Path> collectClasses(Path classFile) {

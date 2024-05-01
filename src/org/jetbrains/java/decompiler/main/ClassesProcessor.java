@@ -321,7 +321,6 @@ public class ClassesProcessor {
 
     boolean packageInfo = cl.isSynthetic() && "package-info".equals(root.simpleName);
     boolean moduleInfo = cl.hasModifier(CodeConstants.ACC_MODULE) && cl.hasAttribute(StructGeneralAttribute.ATTRIBUTE_MODULE);
-
     DecompilerContext.getLogger().startReadingClass(cl.qualifiedName);
     try {
       ImportCollector importCollector = new ImportCollector(root);

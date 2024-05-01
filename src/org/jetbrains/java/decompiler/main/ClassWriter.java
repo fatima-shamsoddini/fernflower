@@ -49,8 +49,8 @@ public class ClassWriter {
     InitializerProcessor.extractInitializers(wrapper);
 
     if (node.type == ClassNode.CLASS_ROOT &&
-        !cl.isVersion5() &&
-        DecompilerContext.getOption(IFernflowerPreferences.DECOMPILE_CLASS_1_4)) {
+      !cl.isVersion5() &&
+      DecompilerContext.getOption(IFernflowerPreferences.DECOMPILE_CLASS_1_4)) {
       ClassReference14Processor.processClassReferences(node);
     }
 
@@ -182,11 +182,11 @@ public class ClassWriter {
 
       for (StructField fd : cl.getFields()) {
         boolean hide = fd.isSynthetic() && DecompilerContext.getOption(IFernflowerPreferences.REMOVE_SYNTHETIC) ||
-                       wrapper.getHiddenMembers().contains(InterpreterUtil.makeUniqueKey(fd.getName(), fd.getDescriptor()));
+          wrapper.getHiddenMembers().contains(InterpreterUtil.makeUniqueKey(fd.getName(), fd.getDescriptor()));
         if (hide) continue;
 
         if (components != null && fd.getAccessFlags() == (CodeConstants.ACC_FINAL | CodeConstants.ACC_PRIVATE) &&
-            components.stream().anyMatch(c -> c.getName().equals(fd.getName()) && c.getDescriptor().equals(fd.getDescriptor()))) {
+          components.stream().anyMatch(c -> c.getName().equals(fd.getName()) && c.getDescriptor().equals(fd.getDescriptor()))) {
           // Record component field: skip it
           continue;
         }
@@ -223,8 +223,8 @@ public class ClassWriter {
       // methods
       for (StructMethod mt : cl.getMethods()) {
         boolean hide = mt.isSynthetic() && DecompilerContext.getOption(IFernflowerPreferences.REMOVE_SYNTHETIC) ||
-                       mt.hasModifier(CodeConstants.ACC_BRIDGE) && DecompilerContext.getOption(IFernflowerPreferences.REMOVE_BRIDGE) ||
-                       wrapper.getHiddenMembers().contains(InterpreterUtil.makeUniqueKey(mt.getName(), mt.getDescriptor()));
+          mt.hasModifier(CodeConstants.ACC_BRIDGE) && DecompilerContext.getOption(IFernflowerPreferences.REMOVE_BRIDGE) ||
+          wrapper.getHiddenMembers().contains(InterpreterUtil.makeUniqueKey(mt.getName(), mt.getDescriptor()));
         if (hide) continue;
 
         int position = buffer.length();
@@ -252,7 +252,7 @@ public class ClassWriter {
           StructClass innerCl = inner.classStruct;
           boolean isSynthetic = (inner.access & CodeConstants.ACC_SYNTHETIC) != 0 || innerCl.isSynthetic();
           boolean hide = isSynthetic && DecompilerContext.getOption(IFernflowerPreferences.REMOVE_SYNTHETIC) ||
-                         wrapper.getHiddenMembers().contains(innerCl.qualifiedName);
+            wrapper.getHiddenMembers().contains(innerCl.qualifiedName);
           if (hide) continue;
 
           if (hasContent) {
@@ -283,18 +283,31 @@ public class ClassWriter {
   @SuppressWarnings("SpellCheckingInspection")
   private static boolean isSyntheticRecordMethod(StructClass cl, StructMethod mt, TextBuffer code) {
     if (cl.getRecordComponents() != null) {
+      //System.out.println("Method Name: " + mt.getName());
+      //System.out.println("Method Descriptor: " + mt.getDescriptor());
       String name = mt.getName(), descriptor = mt.getDescriptor();
+      if( name.equals("<init>"))
+      {
+        //System.out.println("constructor method found!!!");
+        return true;
+      }
+      if(name.equals(mt.getName()))
+     {
+       // System.out.println("the getter method found!!!");
+        return true;
+     }
       if (name.equals("equals") && descriptor.equals("(Ljava/lang/Object;)Z") ||
-          name.equals("hashCode") && descriptor.equals("()I") ||
-          name.equals("toString") && descriptor.equals("()Ljava/lang/String;")) {
+        name.equals("hashCode") && descriptor.equals("()I") ||
+        name.equals("toString") && descriptor.equals("()Ljava/lang/String;")) {
         if (code.countLines() == 1) {
           String str = code.toString().trim();
           return str.startsWith("return this." + name + "<invokedynamic>(this");
         }
       }
     }
-    return false;
+    return false; // Ensure to return a default value in case none of the conditions are met
   }
+
 
   private void writeClassDefinition(ClassNode node, TextBuffer buffer, int indent) {
     if (node.type == ClassNode.CLASS_ANONYMOUS) {
@@ -763,7 +776,7 @@ public class ClassWriter {
 
             VarVersionPair pair = new VarVersionPair(index, 0);
             if (methodWrapper.varproc.isParameterFinal(pair) ||
-                methodWrapper.varproc.getVarFinal(pair) == VarProcessor.VAR_EXPLICIT_FINAL) {
+              methodWrapper.varproc.getVarFinal(pair) == VarProcessor.VAR_EXPLICIT_FINAL) {
               buffer.append("final ");
             }
 
@@ -787,7 +800,7 @@ public class ClassWriter {
             }
 
             if (ExprProcessor.UNDEFINED_TYPE_STRING.equals(typeName) &&
-                DecompilerContext.getOption(IFernflowerPreferences.UNDEFINED_PARAM_TYPE_OBJECT)) {
+              DecompilerContext.getOption(IFernflowerPreferences.UNDEFINED_PARAM_TYPE_OBJECT)) {
               typeName = ExprProcessor.getCastTypeName(VarType.VARTYPE_OBJECT, TypeAnnotationWriteHelper.create(typeParamAnnotations));
             }
             buffer.append(typeName);
@@ -862,8 +875,8 @@ public class ClassWriter {
             TextBuffer code = root.toJava(indent + 1, codeTracer);
 
             hideMethod = code.length() == 0 &&
-              (clInit || dInit || hideConstructor(node, !typeAnnotations.isEmpty(), init, throwsExceptions, paramCount, flags)) ||
-              isSyntheticRecordMethod(cl, mt, code);
+              (clInit || dInit || hideConstructor(node, !typeAnnotations.isEmpty(), init, throwsExceptions, paramCount, flags))
+              || isSyntheticRecordMethod(cl, mt, code);
 
             buffer.append(code);
 
@@ -967,7 +980,7 @@ public class ClassWriter {
 
             String typeName = ExprProcessor.getCastTypeName(md_content.params[i].copy(), Collections.emptyList());
             if (ExprProcessor.UNDEFINED_TYPE_STRING.equals(typeName) &&
-                DecompilerContext.getOption(IFernflowerPreferences.UNDEFINED_PARAM_TYPE_OBJECT)) {
+              DecompilerContext.getOption(IFernflowerPreferences.UNDEFINED_PARAM_TYPE_OBJECT)) {
               typeName = ExprProcessor.getCastTypeName(VarType.VARTYPE_OBJECT, Collections.emptyList());
             }
 
@@ -1030,7 +1043,7 @@ public class ClassWriter {
     for (int i = 0; i < name.length(); i++) {
       char c = name.charAt(i);
       if ((i == 0 && !Character.isJavaIdentifierStart(c))
-          || (i > 0 && !Character.isJavaIdentifierPart(c))) {
+        || (i > 0 && !Character.isJavaIdentifierPart(c))) {
         changed = true;
         res.append("_");
       }
@@ -1086,13 +1099,13 @@ public class ClassWriter {
 
     StructClass cl = node.getWrapper().getClassStruct();
 
-	  int classAccessFlags = node.type == ClassNode.CLASS_ROOT ? cl.getAccessFlags() : node.access;
+    int classAccessFlags = node.type == ClassNode.CLASS_ROOT ? cl.getAccessFlags() : node.access;
     boolean isEnum = cl.hasModifier(CodeConstants.ACC_ENUM) && DecompilerContext.getOption(IFernflowerPreferences.DECOMPILE_ENUM);
 
     // default constructor requires same accessibility flags. Exception: enum constructor which is always private
     if (!isEnum && ((classAccessFlags & ACCESSIBILITY_FLAGS) != (methodAccessFlags & ACCESSIBILITY_FLAGS))) {
-  	  return false;
-  	}
+      return false;
+    }
 
     int count = 0;
     for (StructMethod mt : cl.getMethods()) {
@@ -1163,7 +1176,7 @@ public class ClassWriter {
   private static String getTypePrintOut(VarType type) {
     String typeText = ExprProcessor.getCastTypeName(type, false, Collections.emptyList());
     if (ExprProcessor.UNDEFINED_TYPE_STRING.equals(typeText) &&
-        DecompilerContext.getOption(IFernflowerPreferences.UNDEFINED_PARAM_TYPE_OBJECT)) {
+      DecompilerContext.getOption(IFernflowerPreferences.UNDEFINED_PARAM_TYPE_OBJECT)) {
       typeText = ExprProcessor.getCastTypeName(VarType.VARTYPE_OBJECT, false, Collections.emptyList());
     }
     return typeText;
@@ -1226,14 +1239,14 @@ public class ClassWriter {
 
   private static final int CLASS_ALLOWED =
     CodeConstants.ACC_PUBLIC | CodeConstants.ACC_PROTECTED | CodeConstants.ACC_PRIVATE | CodeConstants.ACC_ABSTRACT |
-    CodeConstants.ACC_STATIC | CodeConstants.ACC_FINAL | CodeConstants.ACC_STRICT;
+      CodeConstants.ACC_STATIC | CodeConstants.ACC_FINAL | CodeConstants.ACC_STRICT;
   private static final int FIELD_ALLOWED =
     CodeConstants.ACC_PUBLIC | CodeConstants.ACC_PROTECTED | CodeConstants.ACC_PRIVATE | CodeConstants.ACC_STATIC |
-    CodeConstants.ACC_FINAL | CodeConstants.ACC_TRANSIENT | CodeConstants.ACC_VOLATILE;
+      CodeConstants.ACC_FINAL | CodeConstants.ACC_TRANSIENT | CodeConstants.ACC_VOLATILE;
   private static final int METHOD_ALLOWED =
     CodeConstants.ACC_PUBLIC | CodeConstants.ACC_PROTECTED | CodeConstants.ACC_PRIVATE | CodeConstants.ACC_ABSTRACT |
-    CodeConstants.ACC_STATIC | CodeConstants.ACC_FINAL | CodeConstants.ACC_SYNCHRONIZED | CodeConstants.ACC_NATIVE |
-    CodeConstants.ACC_STRICT;
+      CodeConstants.ACC_STATIC | CodeConstants.ACC_FINAL | CodeConstants.ACC_SYNCHRONIZED | CodeConstants.ACC_NATIVE |
+      CodeConstants.ACC_STRICT;
 
   private static final int CLASS_EXCLUDED = CodeConstants.ACC_ABSTRACT | CodeConstants.ACC_STATIC;
   private static final int FIELD_EXCLUDED = CodeConstants.ACC_PUBLIC | CodeConstants.ACC_STATIC | CodeConstants.ACC_FINAL;
